@@ -84,7 +84,7 @@ yarn set version classic
 yarn install
 
 # Build Mastodon
-export RAILS_ENV=development 
+export RAILS_ENV=development
 export $(cat ".env.vagrant" | xargs)
 bundle exec rails db:setup
 
@@ -98,24 +98,36 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = "ubuntu/focal64"
-
-  config.vm.provider :virtualbox do |vb|
-    vb.name = "mastodon"
-    vb.customize ["modifyvm", :id, "--memory", "2048"]
-    # Increase the number of CPUs. Uncomment and adjust to
-    # increase performance
-    # vb.customize ["modifyvm", :id, "--cpus", "3"]
-
-    # Disable VirtualBox DNS proxy to skip long-delay IPv6 resolutions.
-    # https://github.com/mitchellh/vagrant/issues/1172
-    vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
-    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
-
-    # Use "virtio" network interfaces for better performance.
-    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
-    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  # M1 support shamelessly stolen from
+  # https://gist.github.com/sbailliez/2305d831ebcf56094fd432a8717bed93
+  config.vm.box = "starboard/ubuntu-arm64-20.04.5"
+  config.vm.box_version = "20221120.20.40.0"
+  config.vm.box_download_insecure = true
+  config.vm.provider "vmware_desktop" do |v|
+      v.ssh_info_public = true
+      v.gui = true
+      v.linked_clone = false
+      v.vmx["ethernet0.virtualdev"] = "vmxnet3"
   end
+
+  # config.vm.box = "generic/ubuntu1604"
+
+  # config.vm.provider :virtualbox do |vb|
+  #   vb.name = "mastodon"
+  #   vb.customize ["modifyvm", :id, "--memory", "2048"]
+  #   # Increase the number of CPUs. Uncomment and adjust to
+  #   # increase performance
+  #   # vb.customize ["modifyvm", :id, "--cpus", "3"]
+
+  #   # Disable VirtualBox DNS proxy to skip long-delay IPv6 resolutions.
+  #   # https://github.com/mitchellh/vagrant/issues/1172
+  #   vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+  #   vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+
+  #   # Use "virtio" network interfaces for better performance.
+  #   vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+  #   vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  # end
 
   # This uses the vagrant-hostsupdater plugin, and lets you
   # access the development site at http://mastodon.local.
